@@ -1,33 +1,65 @@
-import React, { useEffect, useState, useRef } from 'react'; 
-import axios from 'axios'; 
-import { 
-  Grid, Card, CardContent, Typography, Button, Box, 
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField 
-} from '@mui/material'; 
+import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
+import {
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Box,
+  TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from '@mui/material';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([
-    // Làm ví dụ để dễ hình dung 
-    { _id: '1', username: 'Nguyễn Hoài Phương', email: 'nam@example.com', gender: 'male', weight: 70, height: 175, locked: false, blogs: ['First blog post', 'Another gym update'], },
-    { _id: '2', username: 'hoa', email: 'hoa@example.com', gender: 'female', weight: 55, height: 165, locked: true, blogs: ['My fitness journey', 'Healthy eating tips'], },
-    { _id: '3', username: 'hosdfsa', email: 'hoa@example.com', gender: 'female', weight: 55, height: 165, locked: true, blogs: ['My fitness journey', 'Healthy eating tips'], },
-    { _id: '4', username: 'hosdfsda', email: 'hoa@example.com', gender: 'female', weight: 55, height: 165, locked: true, blogs: ['My fitness journey', 'Healthy eating tips'], },
-
-    // Thêm người dùng mặc định khác nếu cần
+    { _id: '1', username: 'Nguyễn Hoài Phương', email: 'nam@example.com', gender: 'male', weight: 70, height: 175, locked: false, blogs: ['First blog post', 'Another gym update'] },
+    { _id: '2', username: 'Hoa', email: 'hoa@example.com', gender: 'female', weight: 55, height: 165, locked: true, blogs: ['My fitness journey', 'Healthy eating tips'] },
+    { _id: '3', username: 'Hà', email: 'ha@example.com', gender: 'female', weight: 50, height: 160, locked: false, blogs: ['Morning workout routine'] },
+    { _id: '4', username: 'An', email: 'an@example.com', gender: 'male', weight: 72, height: 178, locked: true, blogs: ['Diet tips', 'Evening cardio'] },
+    // Thêm nhiều người dùng để test phân trang
   ]);
-  
+
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  const topRef = useRef(null); // Tạo tham chiếu đến đầu trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(2); // Số lượng người dùng trên mỗi trang
 
-  useEffect(() => {
-    // Fetch users from the backend
-    axios
-      .get('/api/users')
-      .then((response) => setUsers([...users, ...response.data]))
-      .catch((error) => console.error(error));
-  }, []);
+  const topRef = useRef(null); // Tham chiếu đến đầu trang
+
+  // Lọc người dùng dựa trên tìm kiếm
+  const filteredUsers = users.filter(
+    (user) =>
+      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Tính tổng số trang
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+
+  // Phân trang danh sách người dùng
+  const displayedUsers = filteredUsers.slice(
+    (currentPage - 1) * usersPerPage,
+    currentPage * usersPerPage
+  );
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    if (topRef.current) {
+      topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+    setCurrentPage(1); // Đặt về trang đầu tiên khi tìm kiếm
+  };
 
   const handleSelectUser = (user) => {
     setSelectedUser(user);
@@ -35,26 +67,6 @@ const UserManagement = () => {
       topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
-
-  const handleToggleLock = (user) => {
-    const updatedUser = { ...user, locked: !user.locked };
-    axios
-      .put(`/api/users/${user._id}`, updatedUser)
-      .then((response) => {
-        setUsers(users.map((u) => (u._id === user._id ? response.data : u)));
-      })
-      .catch((error) => console.error(error));
-  };
-
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const filteredUsers = users.filter(
-    (user) =>
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <Box
@@ -66,13 +78,13 @@ const UserManagement = () => {
         color: 'white',
       }}
     >
-      <div ref={topRef}></div> {/* Phần tử được tham chiếu đến đầu trang */}
+      <div ref={topRef}></div>
       
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <TextField
             fullWidth
-            label="Search Users"
+            label="Tìm kiếm người dùng"
             value={searchQuery}
             onChange={handleSearchChange}
             margin="normal"
@@ -93,10 +105,10 @@ const UserManagement = () => {
 
         <Grid item xs={6}>
           <Typography variant="h3" gutterBottom sx={{ color: 'white' }}>
-            Users
+            Danh sách người dùng
           </Typography>
           <Grid container spacing={2}>
-            {filteredUsers.map((user) => (
+            {displayedUsers.map((user) => (
               <Grid item xs={12} key={user._id}>
                 <Card
                   onClick={() => handleSelectUser(user)}
@@ -120,7 +132,6 @@ const UserManagement = () => {
                           marginRight: 2,
                         }}
                       >
-                        {/* Khung chứa ảnh đại diện */}
                       </Box>
                       <Box>
                         <Typography variant="h5" gutterBottom>
@@ -131,58 +142,42 @@ const UserManagement = () => {
                         </Typography>
                       </Box>
                     </Box>
-                    <Button
-                      variant="contained"
-                      color={user.locked ? 'secondary' : 'primary'}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleLock(user);
-                      }}
-                      sx={{
-                        fontSize: '0.875rem', 
-                        padding: '6px 12px', 
-                        minWidth: '100px', 
-                      }}
-                    >
-                      {user.locked ? 'Unlock' : 'Lock'}
-                    </Button>
                   </CardContent>
                 </Card>
               </Grid>
             ))}
           </Grid>
+
+          {/* Phân trang */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 3 }}>
+            {Array.from({ length: totalPages }, (_, index) => (
+              <Button
+                key={index}
+                variant={currentPage === index + 1 ? 'contained' : 'outlined'}
+                onClick={() => handlePageChange(index + 1)}
+                sx={{ margin: 0.5 }}
+              >
+                {index + 1}
+              </Button>
+            ))}
+          </Box>
         </Grid>
 
         <Grid item xs={6}>
           {selectedUser ? (
             <Box sx={{ padding: 2 }}>
               <Typography variant="h3" gutterBottom sx={{ color: 'white' }}>
-                Account Details
+                Chi tiết tài khoản
               </Typography>
               <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
                 <Table stickyHeader aria-label="user details table">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Field</TableCell>
-                      <TableCell>Information</TableCell>
+                      <TableCell>Trường</TableCell>
+                      <TableCell>Thông tin</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    <TableRow>
-                      <TableCell>Avatar</TableCell>
-                      <TableCell>
-                        <Box
-                          sx={{
-                            width: 56,
-                            height: 56,
-                            backgroundColor: 'grey',
-                            borderRadius: '50%',
-                          }}
-                        >
-                          {/* Khung chứa ảnh đại diện */}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
                     <TableRow>
                       <TableCell>Username</TableCell>
                       <TableCell>{selectedUser.username}</TableCell>
@@ -192,19 +187,19 @@ const UserManagement = () => {
                       <TableCell>{selectedUser.email}</TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell>Gender</TableCell>
+                      <TableCell>Giới tính</TableCell>
                       <TableCell>{selectedUser.gender}</TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell>Weight</TableCell>
-                      <TableCell>{selectedUser.weight}</TableCell>
+                      <TableCell>Cân nặng</TableCell>
+                      <TableCell>{selectedUser.weight} kg</TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell>Height</TableCell>
-                      <TableCell>{selectedUser.height}</TableCell>
+                      <TableCell>Chiều cao</TableCell>
+                      <TableCell>{selectedUser.height} cm</TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell>Blogs</TableCell>
+                      <TableCell>Bài viết</TableCell>
                       <TableCell>
                         <ul>
                           {selectedUser.blogs &&
@@ -222,7 +217,7 @@ const UserManagement = () => {
             </Box>
           ) : (
             <Typography variant="h6" sx={{ color: 'white' }}>
-              Select a user to see details
+              Chọn người dùng để xem chi tiết
             </Typography>
           )}
         </Grid>

@@ -14,7 +14,7 @@ import MeetingRoomTwoToneIcon from '@mui/icons-material/MeetingRoomTwoTone';
 
 // ==============================|| PROFILE SECTION ||============================== //
 
-const ProfileSection = () => {
+const ProfileSection = ({ navigation }) => {
   const theme = useTheme();
 
   const [selectedIndex, setSelectedIndex] = React.useState(1);
@@ -23,6 +23,10 @@ const ProfileSection = () => {
 
   const handleListItemClick = (event, index) => {
     setSelectedIndex(index);
+    if (index === 4) {
+      // Điều hướng về trang đăng nhập khi chọn Logout
+      navigation.navigate('/login');
+    }
   };
 
   const handleToggle = () => {
@@ -107,9 +111,7 @@ const ProfileSection = () => {
                     </ListItemIcon>
                     <ListItemText primary="Profile" />
                   </ListItemButton>
-                  
-                  
-                  <ListItemButton selected={selectedIndex === 4}>
+                  <ListItemButton selected={selectedIndex === 4} onClick={(event) => handleListItemClick(event, 4)}>
                     <ListItemIcon>
                       <MeetingRoomTwoToneIcon />
                     </ListItemIcon>
