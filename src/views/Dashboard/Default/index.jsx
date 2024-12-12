@@ -25,24 +25,24 @@ const Default = () => {
         <Grid container spacing={gridSpacing + 2}>
           {/* Mỗi ô chiếm nhiều không gian hơn với lg={4} */}
           <Grid item lg={4} sm={6} xs={12} >
-            <ReportCard secondary="Blog"  path="/post-management" image ={image1}/>
-            
+            <ReportCard secondary="Blog" path="/post-management" image={image1} />
+
           </Grid>
           <Grid item lg={4} sm={6} xs={12}>
-            <ReportCard secondary="Exercises"  path="/exercise-management" image={image2} />
+            <ReportCard secondary="Exercises" path="/exercise-management" image={image2} />
           </Grid>
           <Grid item lg={4} sm={6} xs={12}>
-            <ReportCard secondary="Feedback"  path="/feedback-management" image={image3} />
+            <ReportCard secondary="Feedback" path="/feedback-management" image={image3} />
           </Grid>
+          {/* <Grid display={false} item lg={4} sm={6} xs={12}>
+            <ReportCard secondary="Training" path="/training-management" image={image4} />
+          </Grid> */}
           <Grid item lg={4} sm={6} xs={12}>
-            <ReportCard secondary="Training"  path ="/training-management" image={image4}/>
+            <ReportCard secondary="Comment" path="/comment-management" image={image5} />
           </Grid>
-          <Grid item lg={4} sm={6} xs={12}>
-            <ReportCard secondary="Comment"  path ="/comment-management" image={image5} />      
-          </Grid>
-          <Grid item lg={4} sm={6} xs={12}>
-            <ReportCard secondary="Plan"  path ="/plan-management" image={image6} />           
-          </Grid>
+          {/* <Grid item lg={4} sm={6} xs={12}>
+            <ReportCard secondary="Plan" path="/plan-management" image={image6} />
+          </Grid> */}
         </Grid>
       </Grid>
     </Grid>

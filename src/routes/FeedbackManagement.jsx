@@ -1,19 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Input, Modal, Form, Rate } from 'antd';
 import axios from 'axios';
-
+const URL = `https://w2fw01lr-3000.asse.devtunnels.ms`
 const { Search } = Input;
 
 const FeedbackManagement = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentFeedback, setCurrentFeedback] = useState(null);
-
+  const token = localStorage.getItem('jwt_token')
   useEffect(() => {
-    // Fetch feedbacks từ API
-    axios.get('/api/feedbacks')
-      .then(response => setFeedbacks(response.data))
-      .catch(error => console.error('Error fetching feedbacks:', error));
+    const fetchAllFeedbacks = async () => {
+      const token = localStorage.getItem('jwt_token')
+      try {
+        const res = await axios.get(`${URL}/api/feedback/admin/getAllFeedbacks/`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        console.log("Check res >>> ", res.data.data);
+
+
+        if (res.status == 200) {
+          setFeedbacks(res.data.data)
+        } else {
+          throw new Error(res.message)
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    fetchAllFeedbacks()
   }, []);
 
   const columns = [
@@ -21,6 +40,7 @@ const FeedbackManagement = () => {
       title: 'Người dùng',
       dataIndex: 'user',
       key: 'user',
+      render: (user) => user?.username || 'Không xác định',
     },
     {
       title: 'Nội dung',
@@ -43,8 +63,8 @@ const FeedbackManagement = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <Button type="link" onClick={() => handleEdit(record)}>Sửa</Button>
-          <Button type="link" danger onClick={() => handleDelete(record.key)}>Xóa</Button>
+          <Button type="link" onClick={() => handleEdit(record)}>Chi tiết</Button>
+          <Button type="link" danger onClick={() => handleDelete(record._id)}>Xóa</Button>
         </Space>
       ),
     },
@@ -60,10 +80,26 @@ const FeedbackManagement = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = (key) => {
-    axios.delete(`/api/feedbacks/${key}`)
-      .then(() => setFeedbacks(feedbacks.filter(feedback => feedback.key !== key)))
-      .catch(error => console.error('Error deleting feedback:', error));
+  const handleDelete = async (id) => {
+    try {
+      const res = await axios.delete(`${URL}/api/feedback/admin/deleteById/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      if (res.status == 200) {
+        console.log(res.data.message);
+      } else {
+        throw new Error(res.data.message)
+      }
+
+      setFeedbacks((feedbacks) => feedbacks.filter((item) => item._id != id))
+
+    } catch (error) {
+      console.log(error);
+
+    }
   };
 
   const handleSave = (values) => {
@@ -88,33 +124,33 @@ const FeedbackManagement = () => {
     <div style={{ padding: 20 }}>
       <h2 style={{ color: 'white' }}>Quản lý Feedback</h2>
       <Space style={{ marginBottom: 16 }}>
-        <Button type="primary" onClick={handleAdd}>Thêm mới</Button>
+        {/* <Button type="primary" onClick={handleAdd}>Thêm mới</Button> */}
         <Search placeholder="Tìm feedback" style={{ width: 300 }} />
       </Space>
       <Table columns={columns} dataSource={feedbacks} rowKey="key" />
 
       <Modal
-        title={currentFeedback ? 'Sửa feedback' : 'Thêm feedback'}
+        title={currentFeedback ? 'Chi tiết feedback' : 'Thêm feedback'}
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
         <Form
-          initialValues={currentFeedback || { user: '', content: '', rate: '5' }}
+          initialValues={currentFeedback || { user: '' || '', content: '', rate: '5' }}
           onFinish={handleSave}
         >
           <Form.Item name="user" label="Người dùng" rules={[{ required: true, message: 'Vui lòng nhập tên người dùng!' }]}>
-            <Input />
+            <Input disabled />
           </Form.Item>
           <Form.Item name="content" label="Nội dung" rules={[{ required: true, message: 'Vui lòng nhập nội dung!' }]}>
-            <Input />
+            <Input disabled />
           </Form.Item>
           <Form.Item name="rate" label="Đánh giá" rules={[{ required: true, message: 'Vui lòng chọn mức đánh giá!' }]}>
-            <Rate />
+            <Rate disabled />
           </Form.Item>
-          <Form.Item>
+          {/* <Form.Item>
             <Button type="primary" htmlType="submit">Lưu</Button>
-          </Form.Item>
+          </Form.Item> */}
         </Form>
       </Modal>
     </div>
